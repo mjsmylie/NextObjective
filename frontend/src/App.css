@@ -514,8 +514,45 @@ body {
 }
 
 /* Survey */
+.survey-progress {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.progress-text {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.progress-bar {
+  background: #e5e7eb;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
 .survey-questions {
   space-y: 2rem;
+}
+
+.scale-value {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4f46e5;
 }
 
 .question-card {
