@@ -520,7 +520,7 @@ async def submit_survey(survey: SurveyResponse):
 # Basic health check
 @api_router.get("/")
 async def root():
-    return {"message": "Career Transition API is running"}
+    return {"message": "NextObjective API is running"}
 
 # Include the router in the main app
 app.include_router(api_router)
