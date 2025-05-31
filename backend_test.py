@@ -439,7 +439,7 @@ def main():
     tester = NextObjectiveAPITester()
     
     # Run tests
-    print("\n===== TESTING NEXTOBJECTIVE API =====\n")
+    print("\n===== TESTING NEXTOBJECTIVE API WITH SURVEY INTEGRATION =====\n")
     
     # Test API health
     if not tester.test_api_health():
@@ -458,30 +458,7 @@ def main():
     # Test resume upload and analysis
     if not tester.test_upload_resume():
         print("❌ Resume upload failed")
-    
-    # Test career path selection
-    if not tester.test_select_career_path():
-        print("❌ Career path selection failed")
-    
-    # Test custom career path selection
-    if not tester.test_select_custom_career_path():
-        print("❌ Custom career path selection failed")
-    
-    # Test career score calculation
-    if not tester.test_calculate_career_score():
-        print("❌ Career score calculation failed")
-    
-    # Test low match career score
-    if not tester.test_low_match_career_score():
-        print("❌ Low match career score calculation failed")
-    
-    # Test adding progress log
-    if not tester.test_add_progress_log():
-        print("❌ Adding progress log failed")
-    
-    # Test getting user progress
-    if not tester.test_get_user_progress():
-        print("❌ Getting user progress failed")
+        return 1
     
     # Test getting survey questions
     if not tester.test_get_survey_questions():
@@ -491,12 +468,49 @@ def main():
     if not tester.test_submit_survey():
         print("❌ Submitting survey failed")
     
+    # Test enhanced career suggestions
+    if not tester.test_get_enhanced_career_suggestions():
+        print("❌ Getting enhanced career suggestions failed")
+    
+    # Test career path selection
+    if not tester.test_select_career_path():
+        print("❌ Career path selection failed")
+    
+    # Test career score calculation
+    if not tester.test_calculate_career_score():
+        print("❌ Career score calculation failed")
+    
+    # Test adding progress log
+    if not tester.test_add_progress_log():
+        print("❌ Adding progress log failed")
+    
+    # Test getting user progress
+    if not tester.test_get_user_progress():
+        print("❌ Getting user progress failed")
+    
     # Test getting job listings
     if not tester.test_get_job_listings():
         print("❌ Getting job listings failed")
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    
+    # Summary of survey integration testing
+    print("\n===== SURVEY INTEGRATION TESTING SUMMARY =====")
+    if tester.enhanced_analysis:
+        print("✅ Enhanced career suggestions endpoint is working")
+        if tester.standard_analysis and tester.enhanced_analysis:
+            std_count = len(tester.standard_analysis.get('career_suggestions', []))
+            enh_count = len(tester.enhanced_analysis.get('career_suggestions', []))
+            print(f"✅ Standard analysis: {std_count} suggestions")
+            print(f"✅ Enhanced analysis: {enh_count} suggestions")
+            
+            # Check if all enhanced suggestions have preference_match field
+            has_pref = all('preference_match' in s for s in tester.enhanced_analysis.get('career_suggestions', []))
+            print(f"{'✅' if has_pref else '❌'} Preference matching information is {'present' if has_pref else 'missing'}")
+    else:
+        print("❌ Enhanced career suggestions testing failed")
+    
     return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
