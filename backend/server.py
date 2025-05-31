@@ -124,6 +124,8 @@ async def extract_text_from_pdf(file_content: bytes) -> str:
 # AI helper function
 async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
     try:
+        print(f"Starting AI analysis for resume: {resume_text[:100]}...")
+        
         chat = LlmChat(
             api_key=ANTHROPIC_API_KEY,
             session_id=str(uuid.uuid4()),
@@ -143,33 +145,54 @@ async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
                     "match_score": 0.85,
                     "reasoning": "Explanation of why this career fits",
                     "key_skills": ["skill1", "skill2", "skill3"]
+                }},
+                {{
+                    "career_path": "Another Career Title", 
+                    "match_score": 0.78,
+                    "reasoning": "Another explanation",
+                    "key_skills": ["skill1", "skill2", "skill3"]
+                }},
+                {{
+                    "career_path": "Third Career Title",
+                    "match_score": 0.72,
+                    "reasoning": "Third explanation", 
+                    "key_skills": ["skill1", "skill2", "skill3"]
                 }}
             ],
             "extracted_skills": ["skill1", "skill2", "skill3", "skill4"],
             "experience_level": "Entry Level/Mid Level/Senior Level"
         }}
 
-        Provide 3-5 career suggestions ranked by match score (0.0-1.0). Consider the person's background, skills, and experience.
+        IMPORTANT: Provide exactly 3 career suggestions ranked by match score (0.0-1.0). Consider the person's background, skills, and experience. Return ONLY valid JSON.
         """
 
         user_message = UserMessage(text=prompt)
+        print("Sending message to Claude API...")
         response = await chat.send_message(user_message)
+        print(f"Received response from Claude: {str(response)[:200]}...")
         
-        # Parse the AI response - in a real implementation you'd want more robust parsing
+        # Parse the AI response
         import json
-        try:
-            # Extract JSON from the response
-            response_text = str(response)
-            # Find JSON in the response
-            start_idx = response_text.find('{')
-            end_idx = response_text.rfind('}') + 1
-            if start_idx != -1 and end_idx != 0:
-                json_str = response_text[start_idx:end_idx]
-                return json.loads(json_str)
-        except:
-            pass
+        response_text = str(response)
+        print(f"Full response text: {response_text}")
         
-        # Fallback response if AI parsing fails
+        # Find JSON in the response
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}') + 1
+        
+        if start_idx != -1 and end_idx != 0:
+            json_str = response_text[start_idx:end_idx]
+            print(f"Extracted JSON: {json_str}")
+            result = json.loads(json_str)
+            print(f"Parsed result: {result}")
+            return result
+        else:
+            print("Could not find JSON in response")
+            raise ValueError("No JSON found in response")
+        
+    except Exception as e:
+        print(f"AI analysis error: {e}")
+        # Fallback response with 3 suggestions
         return {
             "career_suggestions": [
                 {
@@ -177,23 +200,21 @@ async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
                     "match_score": 0.8,
                     "reasoning": "Based on technical background and skills",
                     "key_skills": ["Programming", "Problem Solving", "Technical Skills"]
+                },
+                {
+                    "career_path": "Data Analyst", 
+                    "match_score": 0.75,
+                    "reasoning": "Strong analytical and technical capabilities",
+                    "key_skills": ["Data Analysis", "Problem Solving", "Technical Skills"]
+                },
+                {
+                    "career_path": "Project Manager",
+                    "match_score": 0.7, 
+                    "reasoning": "Leadership potential and organizational skills",
+                    "key_skills": ["Leadership", "Communication", "Project Management"]
                 }
             ],
             "extracted_skills": ["Communication", "Leadership", "Technical Skills"],
-            "experience_level": "Mid Level"
-        }
-    except Exception as e:
-        # Fallback for AI errors
-        return {
-            "career_suggestions": [
-                {
-                    "career_path": "Business Analyst",
-                    "match_score": 0.75,
-                    "reasoning": "General business skills and analytical thinking",
-                    "key_skills": ["Analysis", "Communication", "Problem Solving"]
-                }
-            ],
-            "extracted_skills": ["Communication", "Analysis", "Problem Solving"],
             "experience_level": "Mid Level"
         }
 
