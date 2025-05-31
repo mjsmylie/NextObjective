@@ -345,6 +345,7 @@ function App() {
           <div className="choice-icon">📝</div>
           <h3>Take Preference Survey</h3>
           <p>Answer 10 questions about your work preferences to refine and personalize your career recommendations</p>
+          <div className="enhancement-badge">✨ Enhanced AI Recommendations</div>
           <button 
             onClick={() => setCurrentStep('survey')}
             className="btn-primary"
