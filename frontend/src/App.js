@@ -306,62 +306,186 @@ function App() {
     </div>
   );
 
-  const renderCareerSuggestions = () => (
+  const renderPostUploadChoice = () => (
     <div className="step-container">
-      <h2>🎯 AI Career Suggestions</h2>
-      <p className="step-description">Based on your resume analysis, here are the top career paths for you:</p>
+      <h2>✅ Resume Analysis Complete!</h2>
+      <p className="step-description">
+        We've analyzed your resume and identified potential career paths. 
+        How would you like to proceed?
+      </p>
       
-      <div className="suggestions-grid">
-        {resumeAnalysis?.career_suggestions.map((suggestion, index) => (
-          <div key={index} className="suggestion-card">
-            <div className="suggestion-header">
-              <h3>{suggestion.career_path}</h3>
-              <div className="match-score">
-                {Math.round(suggestion.match_score * 100)}% Match
+      <div className="choice-cards">
+        <div className="choice-card">
+          <div className="choice-icon">📝</div>
+          <h3>Take Preference Survey</h3>
+          <p>Answer 10 questions about your work preferences to refine and personalize your career recommendations</p>
+          <button 
+            onClick={() => setCurrentStep('survey')}
+            className="btn-primary"
+          >
+            Take Survey First
+          </button>
+        </div>
+        
+        <div className="choice-card">
+          <div className="choice-icon">🚀</div>
+          <h3>View Recommendations</h3>
+          <p>See your AI-generated career suggestions based on your resume analysis right away</p>
+          <button 
+            onClick={() => setCurrentStep('career-suggestions')}
+            className="btn-primary"
+          >
+            View Results Now
+          </button>
+        </div>
+      </div>
+      
+      <div className="quick-stats">
+        <h4>Your Resume Analysis Summary:</h4>
+        <div className="stats-grid">
+          <div className="stat-item">
+            <span className="stat-number">{resumeAnalysis?.career_suggestions.length}</span>
+            <span className="stat-label">Career Suggestions</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{resumeAnalysis?.extracted_skills.length}</span>
+            <span className="stat-label">Skills Identified</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-level">{resumeAnalysis?.experience_level}</span>
+            <span className="stat-label">Experience Level</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCareerSuggestions = () => {
+    const filteredCareerPaths = careerPaths.filter(path =>
+      path.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+      <div className="step-container">
+        <h2>🎯 AI Career Suggestions</h2>
+        <p className="step-description">Based on your resume analysis, here are the top career paths for you:</p>
+        
+        <div className="suggestions-grid">
+          {resumeAnalysis?.career_suggestions.map((suggestion, index) => (
+            <div key={index} className="suggestion-card">
+              <div className="suggestion-header">
+                <h3>{suggestion.career_path}</h3>
+                <div className="match-score">
+                  {Math.round(suggestion.match_score * 100)}% Match
+                </div>
               </div>
-            </div>
-            <p className="suggestion-reasoning">{suggestion.reasoning}</p>
-            <div className="skills-list">
-              <h4>Key Skills:</h4>
-              <div className="skills-tags">
-                {suggestion.key_skills.map((skill, i) => (
-                  <span key={i} className="skill-tag">{skill}</span>
-                ))}
+              <p className="suggestion-reasoning">{suggestion.reasoning}</p>
+              <div className="skills-list">
+                <h4>Key Skills:</h4>
+                <div className="skills-tags">
+                  {suggestion.key_skills.map((skill, i) => (
+                    <span key={i} className="skill-tag">{skill}</span>
+                  ))}
+                </div>
               </div>
+              <button 
+                onClick={() => selectCareerPath(suggestion.career_path)}
+                className="btn-primary"
+              >
+                Select This Path
+              </button>
             </div>
+          ))}
+        </div>
+        
+        <div className="or-divider">
+          <span>or search for any career path</span>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search for any career path..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <div className="search-icon">🔍</div>
+          </div>
+          
+          <div className="career-paths-grid">
+            {filteredCareerPaths.slice(0, 12).map((path, index) => (
+              <button
+                key={index}
+                onClick={() => selectCareerPath(path)}
+                className="career-path-btn"
+              >
+                {path}
+              </button>
+            ))}
+          </div>
+          
+          {searchTerm && filteredCareerPaths.length === 0 && (
+            <div className="no-results">
+              <p>No career paths found matching "{searchTerm}"</p>
+              <button 
+                onClick={() => selectCareerPath(searchTerm)}
+                className="btn-secondary"
+              >
+                Select "{searchTerm}" anyway
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Calculating your career score...</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderWarningDialog = () => (
+    showWarningDialog && (
+      <div className="dialog-overlay">
+        <div className="dialog-box">
+          <div className="dialog-header">
+            <h3>⚠️ Low Match Warning</h3>
+          </div>
+          <div className="dialog-content">
+            <p>
+              Based on your resume analysis, <strong>{warningCareerPath}</strong> shows 
+              a lower compatibility score of <strong>{potentialScore}/100</strong> with your current experience.
+            </p>
+            <p>
+              This doesn't mean you can't pursue this path! It just means you may need more 
+              preparation and skill development to be competitive in this field.
+            </p>
+          </div>
+          <div className="dialog-actions">
             <button 
-              onClick={() => selectCareerPath(suggestion.career_path)}
+              onClick={() => {
+                setShowWarningDialog(false);
+                proceedWithCareerPath(warningCareerPath);
+              }}
               className="btn-primary"
             >
-              Select This Path
+              Proceed Anyway
+            </button>
+            <button 
+              onClick={() => setShowWarningDialog(false)}
+              className="btn-secondary"
+            >
+              Choose Different Path
             </button>
           </div>
-        ))}
-      </div>
-      
-      <div className="or-divider">
-        <span>or choose from our master list</span>
-      </div>
-      
-      <div className="career-paths-grid">
-        {careerPaths.slice(0, 12).map((path, index) => (
-          <button
-            key={index}
-            onClick={() => selectCareerPath(path)}
-            className="career-path-btn"
-          >
-            {path}
-          </button>
-        ))}
-      </div>
-      
-      {loading && (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Calculating your career score...</p>
         </div>
-      )}
-    </div>
+      </div>
+    )
   );
 
   const renderCareerScore = () => (
