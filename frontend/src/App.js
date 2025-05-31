@@ -208,7 +208,9 @@ function App() {
   };
 
   const handleSurveySubmit = async () => {
+    setLoading(true);
     try {
+      // Submit survey responses
       await fetch(`${API_BASE_URL}/api/submit-survey`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -218,17 +220,23 @@ function App() {
         })
       });
       
+      console.log('Survey submitted successfully, getting enhanced suggestions...');
+      
       // Get enhanced career suggestions based on survey responses
       await getEnhancedCareerSuggestions();
       
+      console.log('Enhanced suggestions received, navigating to career suggestions...');
       setCurrentStep('career-suggestions');
     } catch (error) {
       console.error('Error submitting survey:', error);
+      // Fallback to regular career suggestions if enhanced fails
+      setCurrentStep('career-suggestions');
+    } finally {
+      setLoading(false);
     }
   };
 
   const getEnhancedCareerSuggestions = async () => {
-    setLoading(true);
     try {
       const formData = new FormData();
       formData.append('user_id', userId);
@@ -240,12 +248,16 @@ function App() {
       
       if (response.ok) {
         const enhancedAnalysis = await response.json();
+        console.log('Enhanced analysis received:', enhancedAnalysis);
         setResumeAnalysis(enhancedAnalysis);
+        return true;
+      } else {
+        console.error('Enhanced suggestions API call failed:', response.status);
+        return false;
       }
     } catch (error) {
       console.error('Error getting enhanced suggestions:', error);
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
 
