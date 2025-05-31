@@ -217,9 +217,35 @@ function App() {
           responses: surveyResponses
         })
       });
+      
+      // Get enhanced career suggestions based on survey responses
+      await getEnhancedCareerSuggestions();
+      
       setCurrentStep('career-suggestions');
     } catch (error) {
       console.error('Error submitting survey:', error);
+    }
+  };
+
+  const getEnhancedCareerSuggestions = async () => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('user_id', userId);
+      
+      const response = await fetch(`${API_BASE_URL}/api/enhanced-career-suggestions`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const enhancedAnalysis = await response.json();
+        setResumeAnalysis(enhancedAnalysis);
+      }
+    } catch (error) {
+      console.error('Error getting enhanced suggestions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
