@@ -196,6 +196,126 @@ async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
             "experience_level": "Mid Level"
         }
 
+# Enhanced AI function that considers survey responses
+async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        chat = LlmChat(
+            api_key=ANTHROPIC_API_KEY,
+            session_id=str(uuid.uuid4()),
+            system_message="You are an expert career counselor who provides personalized career recommendations based on both professional background and personal preferences."
+        ).with_model("anthropic", "claude-3-5-sonnet-20241022")
+
+        # Convert survey responses to readable preferences
+        preferences_text = format_survey_preferences(survey_responses)
+
+        prompt = f"""
+        Analyze this resume and provide personalized career suggestions based on both the professional background and personal preferences:
+
+        RESUME:
+        {resume_text}
+
+        PERSONAL PREFERENCES:
+        {preferences_text}
+
+        Please provide your analysis in the following JSON format:
+        {{
+            "career_suggestions": [
+                {{
+                    "career_path": "Career Title",
+                    "match_score": 0.85,
+                    "reasoning": "Explanation combining skills match AND preference alignment",
+                    "key_skills": ["skill1", "skill2", "skill3"],
+                    "preference_match": "How this career aligns with their stated preferences"
+                }}
+            ],
+            "extracted_skills": ["skill1", "skill2", "skill3", "skill4"],
+            "experience_level": "Entry Level/Mid Level/Senior Level"
+        }}
+
+        IMPORTANT: 
+        - Rank suggestions based on BOTH technical fit AND preference alignment
+        - Consider work environment, work-life balance, company size, industry preferences
+        - Explain how each suggestion matches their personal preferences
+        - Provide 4-6 career suggestions that balance skills and preferences
+        - Adjust match scores based on preference alignment (lower scores for poor preference fits)
+        """
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse the AI response
+        import json
+        try:
+            response_text = str(response)
+            start_idx = response_text.find('{')
+            end_idx = response_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != 0:
+                json_str = response_text[start_idx:end_idx]
+                result = json.loads(json_str)
+                # Ensure preference_match is included in each suggestion
+                for suggestion in result.get("career_suggestions", []):
+                    if "preference_match" not in suggestion:
+                        suggestion["preference_match"] = "Good alignment with stated preferences"
+                return result
+        except:
+            pass
+        
+        # Fallback with preference consideration
+        return {
+            "career_suggestions": [
+                {
+                    "career_path": "Business Analyst",
+                    "match_score": 0.8,
+                    "reasoning": "Good fit based on analytical skills and work preferences",
+                    "key_skills": ["Analysis", "Communication", "Problem Solving"],
+                    "preference_match": "Aligns with your work style preferences"
+                }
+            ],
+            "extracted_skills": ["Communication", "Analysis", "Problem Solving"],
+            "experience_level": "Mid Level"
+        }
+    except Exception as e:
+        # Return basic analysis if enhanced fails
+        return await analyze_resume_with_ai(resume_text)
+
+def format_survey_preferences(survey_responses: Dict[str, Any]) -> str:
+    """Convert survey responses to readable preference text"""
+    preferences = []
+    
+    # Map question IDs to readable preferences
+    question_mapping = {
+        1: "Work Environment",
+        2: "Work-Life Balance Importance",
+        3: "Company Size Preference", 
+        4: "Public Speaking Comfort",
+        5: "Work Style Preference",
+        6: "Career Motivation",
+        7: "Job Security Importance",
+        8: "Industry Interest",
+        9: "Relocation Willingness",
+        10: "Career Timeline"
+    }
+    
+    for q_id, response in survey_responses.items():
+        if str(q_id) in ["1", "3", "5", "6", "8", "10"]:  # Multiple choice questions
+            preferences.append(f"- {question_mapping.get(int(q_id), f'Question {q_id}')}: {response}")
+        else:  # Scale questions (2, 4, 7, 9)
+            scale_value = int(response) if isinstance(response, (int, str)) else 3
+            if int(q_id) == 2:  # Work-life balance
+                importance = ["Not important", "Slightly important", "Moderately important", "Very important", "Extremely important"][scale_value-1]
+                preferences.append(f"- Work-Life Balance: {importance}")
+            elif int(q_id) == 4:  # Public speaking
+                comfort = ["Very uncomfortable", "Uncomfortable", "Neutral", "Comfortable", "Very comfortable"][scale_value-1]
+                preferences.append(f"- Public Speaking: {comfort}")
+            elif int(q_id) == 7:  # Job security
+                importance = ["Not important", "Slightly important", "Moderately important", "Very important", "Extremely important"][scale_value-1]
+                preferences.append(f"- Job Security: {importance}")
+            elif int(q_id) == 9:  # Relocation
+                willingness = ["Not willing", "Slightly willing", "Moderately willing", "Very willing", "Extremely willing"][scale_value-1]
+                preferences.append(f"- Relocation: {willingness}")
+    
+    return "\n".join(preferences)
+
 # Calculate career score using AI
 async def calculate_career_score_with_ai(resume_text: str, career_path: str) -> Dict[str, Any]:
     try:
