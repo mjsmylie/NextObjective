@@ -354,9 +354,17 @@ def main():
     if not tester.test_select_career_path():
         print("❌ Career path selection failed")
     
+    # Test custom career path selection
+    if not tester.test_select_custom_career_path():
+        print("❌ Custom career path selection failed")
+    
     # Test career score calculation
     if not tester.test_calculate_career_score():
         print("❌ Career score calculation failed")
+    
+    # Test low match career score
+    if not tester.test_low_match_career_score():
+        print("❌ Low match career score calculation failed")
     
     # Test adding progress log
     if not tester.test_add_progress_log():
