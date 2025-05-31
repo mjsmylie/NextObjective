@@ -28,7 +28,7 @@ function App() {
   const [potentialScore, setPotentialScore] = useState(0);
 
   useEffect(() => {
-    // Create a user session
+    // Create a user session and store user ID
     createUser();
     fetchCareerPaths();
     fetchSurveyQuestions();
@@ -43,6 +43,8 @@ function App() {
       });
       const userData = await response.json();
       setUserId(userData.id);
+      // Store user ID in localStorage for persistence
+      localStorage.setItem('nextObjectiveUserId', userData.id);
     } catch (error) {
       console.error('Error creating user:', error);
     }
