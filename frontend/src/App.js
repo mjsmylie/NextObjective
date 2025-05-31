@@ -759,6 +759,7 @@ function App() {
     switch (currentStep) {
       case 'welcome': return renderWelcome();
       case 'upload': return renderUpload();
+      case 'post-upload-choice': return renderPostUploadChoice();
       case 'career-suggestions': return renderCareerSuggestions();
       case 'career-score': return renderCareerScore();
       case 'survey': return renderSurvey();
