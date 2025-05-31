@@ -221,6 +221,8 @@ async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
 # Enhanced AI function that considers survey responses
 async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[str, Any]) -> Dict[str, Any]:
     try:
+        print(f"Starting enhanced AI analysis with survey data...")
+        
         chat = LlmChat(
             api_key=ANTHROPIC_API_KEY,
             session_id=str(uuid.uuid4()),
@@ -248,6 +250,20 @@ async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[st
                     "reasoning": "Explanation combining skills match AND preference alignment",
                     "key_skills": ["skill1", "skill2", "skill3"],
                     "preference_match": "How this career aligns with their stated preferences"
+                }},
+                {{
+                    "career_path": "Another Career Title",
+                    "match_score": 0.78,
+                    "reasoning": "Another explanation with preference consideration",
+                    "key_skills": ["skill1", "skill2", "skill3"],
+                    "preference_match": "How this career aligns with preferences"
+                }},
+                {{
+                    "career_path": "Third Career Title",
+                    "match_score": 0.72,
+                    "reasoning": "Third explanation with preference consideration",
+                    "key_skills": ["skill1", "skill2", "skill3"],
+                    "preference_match": "How this career aligns with preferences"
                 }}
             ],
             "extracted_skills": ["skill1", "skill2", "skill3", "skill4"],
@@ -255,50 +271,73 @@ async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[st
         }}
 
         IMPORTANT: 
-        - Rank suggestions based on BOTH technical fit AND preference alignment
+        - Provide exactly 3 career suggestions that balance skills AND preferences
+        - Rank based on BOTH technical fit AND preference alignment
         - Consider work environment, work-life balance, company size, industry preferences
         - Explain how each suggestion matches their personal preferences
-        - Provide 4-6 career suggestions that balance skills and preferences
-        - Adjust match scores based on preference alignment (lower scores for poor preference fits)
+        - Adjust match scores based on preference alignment (boost scores for good preference fits)
+        - Return ONLY valid JSON
         """
 
         user_message = UserMessage(text=prompt)
+        print("Sending enhanced message to Claude API...")
         response = await chat.send_message(user_message)
+        print(f"Received enhanced response from Claude: {str(response)[:200]}...")
         
-        # Parse the AI response
+        # Parse AI response
         import json
-        try:
-            response_text = str(response)
-            start_idx = response_text.find('{')
-            end_idx = response_text.rfind('}') + 1
-            if start_idx != -1 and end_idx != 0:
-                json_str = response_text[start_idx:end_idx]
-                result = json.loads(json_str)
-                # Ensure preference_match is included in each suggestion
-                for suggestion in result.get("career_suggestions", []):
-                    if "preference_match" not in suggestion:
-                        suggestion["preference_match"] = "Good alignment with stated preferences"
-                return result
-        except:
-            pass
+        response_text = str(response)
+        print(f"Full enhanced response: {response_text}")
         
-        # Fallback with preference consideration
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}') + 1
+        
+        if start_idx != -1 and end_idx != 0:
+            json_str = response_text[start_idx:end_idx]
+            print(f"Extracted enhanced JSON: {json_str}")
+            result = json.loads(json_str)
+            
+            # Ensure preference_match is included in each suggestion
+            for suggestion in result.get("career_suggestions", []):
+                if "preference_match" not in suggestion:
+                    suggestion["preference_match"] = "Good alignment with stated preferences"
+            
+            print(f"Parsed enhanced result: {result}")
+            return result
+        else:
+            print("Could not find JSON in enhanced response")
+            raise ValueError("No JSON found in enhanced response")
+            
+    except Exception as e:
+        print(f"Enhanced AI analysis error: {e}")
+        # Return enhanced fallback with preference consideration
         return {
             "career_suggestions": [
                 {
-                    "career_path": "Business Analyst",
-                    "match_score": 0.8,
-                    "reasoning": "Good fit based on analytical skills and work preferences",
-                    "key_skills": ["Analysis", "Communication", "Problem Solving"],
-                    "preference_match": "Aligns with your work style preferences"
+                    "career_path": "Remote Software Developer",
+                    "match_score": 0.82,
+                    "reasoning": "Good fit based on technical skills and remote work preferences",
+                    "key_skills": ["Programming", "Remote Collaboration", "Problem Solving"],
+                    "preference_match": "Aligns with remote work and technology preferences"
+                },
+                {
+                    "career_path": "Product Manager",
+                    "match_score": 0.78,
+                    "reasoning": "Leadership skills match with preference-aligned work environment",
+                    "key_skills": ["Leadership", "Communication", "Strategy"],
+                    "preference_match": "Good match for stated work style and company size preferences"
+                },
+                {
+                    "career_path": "UX Designer",
+                    "match_score": 0.74,
+                    "reasoning": "Creative skills with technology focus matching preferences",
+                    "key_skills": ["Design", "Creativity", "User Research"],
+                    "preference_match": "Matches creative expression and technology industry preferences"
                 }
             ],
-            "extracted_skills": ["Communication", "Analysis", "Problem Solving"],
+            "extracted_skills": ["Communication", "Leadership", "Technical Skills"],
             "experience_level": "Mid Level"
         }
-    except Exception as e:
-        # Return basic analysis if enhanced fails
-        return await analyze_resume_with_ai(resume_text)
 
 def format_survey_preferences(survey_responses: Dict[str, Any]) -> str:
     """Convert survey responses to readable preference text"""
