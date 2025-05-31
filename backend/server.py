@@ -469,6 +469,8 @@ async def get_enhanced_career_suggestions(user_id: str = Form(...)):
     )
     
     return analysis
+
+@api_router.get("/career-paths")
 async def get_career_paths():
     return {"career_paths": CAREER_PATHS}
 
