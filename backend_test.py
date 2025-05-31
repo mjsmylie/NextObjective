@@ -160,6 +160,26 @@ class NextObjectiveAPITester:
             }
         )
         return success
+        
+    def test_select_custom_career_path(self):
+        """Test custom career path selection (not in master list)"""
+        success, response = self.run_test(
+            "Select Custom Career Path",
+            "POST",
+            "select-career-path",
+            200,
+            data={
+                "user_id": self.user_id,
+                "selected_career_path": self.custom_career_path
+            }
+        )
+        
+        if success:
+            print(f"Successfully selected custom career path: {self.custom_career_path}")
+            # Store the custom path for later tests
+            self.selected_career_path = self.custom_career_path
+            return True
+        return False
 
     def test_calculate_career_score(self):
         """Test career score calculation"""
