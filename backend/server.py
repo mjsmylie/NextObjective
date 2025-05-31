@@ -53,6 +53,7 @@ class CareerSuggestion(BaseModel):
     match_score: float
     reasoning: str
     key_skills: List[str]
+    preference_match: Optional[str] = "Good alignment with preferences"
 
 class ResumeAnalysisResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
