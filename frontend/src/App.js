@@ -87,6 +87,7 @@ function App() {
       });
       const analysis = await response.json();
       setResumeAnalysis(analysis);
+      setIsEnhancedSuggestions(false); // Standard analysis, not enhanced
       setCurrentStep('post-upload-choice');
     } catch (error) {
       console.error('Error uploading resume:', error);
