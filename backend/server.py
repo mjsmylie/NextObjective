@@ -385,6 +385,14 @@ async def get_user_progress(user_id: str):
         limit=10
     ).to_list(10)
     
+    # Convert ObjectIds to strings for JSON serialization
+    if latest_score and "_id" in latest_score:
+        latest_score["_id"] = str(latest_score["_id"])
+    
+    for log in progress_logs:
+        if "_id" in log:
+            log["_id"] = str(log["_id"])
+    
     return {
         "career_score": latest_score,
         "recent_logs": progress_logs
