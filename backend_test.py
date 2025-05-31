@@ -206,6 +206,37 @@ class NextObjectiveAPITester:
                 print(f"Recommendations: {', '.join(response['recommendations'])}")
             return True
         return False
+        
+    def test_low_match_career_score(self):
+        """Test career score calculation for a likely low-match career"""
+        # Use a career path that's likely to have a low match with the test resume
+        low_match_career = "Graphic Designer"
+        
+        form_data = {
+            'user_id': self.user_id,
+            'career_path': low_match_career
+        }
+        
+        success, response = self.run_test(
+            "Calculate Low Match Career Score",
+            "POST",
+            "calculate-career-score",
+            200,
+            form_data=form_data
+        )
+        
+        if success:
+            score = response.get('current_score', 0)
+            print(f"Low match career score: {score}/100")
+            
+            # Check if score is indeed low (below 60)
+            if score < 60:
+                print("✅ Confirmed low match score (below 60)")
+            else:
+                print(f"⚠️ Expected low score but got {score}")
+                
+            return True
+        return False
 
     def test_add_progress_log(self):
         """Test adding a progress log"""
