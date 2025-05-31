@@ -406,6 +406,12 @@ function App() {
                 </div>
               </div>
               <p className="suggestion-reasoning">{suggestion.reasoning}</p>
+              {suggestion.preference_match && (
+                <div className="preference-match">
+                  <h4>🎯 Preference Alignment:</h4>
+                  <p>{suggestion.preference_match}</p>
+                </div>
+              )}
               <div className="skills-list">
                 <h4>Key Skills:</h4>
                 <div className="skills-tags">
