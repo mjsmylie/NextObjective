@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime
 import PyPDF2
 import io
+import re
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
