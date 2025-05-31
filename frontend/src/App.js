@@ -661,7 +661,7 @@ function App() {
                     key={index}
                     onClick={() => setSurveyResponses({
                       ...surveyResponses,
-                      [question.id]: option
+                      [question.id.toString()]: option
                     })}
                     className={`option-btn ${surveyResponses[question.id] === option ? 'selected' : ''}`}
                   >
