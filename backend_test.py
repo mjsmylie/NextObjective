@@ -222,7 +222,7 @@ def main():
     tester = CareerLaunchAPITester()
     
     # Run tests
-    print("\n===== TESTING CAREERLAUNCH API =====\n")
+    print("\n===== TESTING NEXTOBJECTIVE API =====\n")
     
     # Test API health
     if not tester.test_api_health():
