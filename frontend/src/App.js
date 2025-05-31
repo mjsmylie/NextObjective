@@ -217,7 +217,7 @@ function App() {
           responses: surveyResponses
         })
       });
-      setCurrentStep('dashboard');
+      setCurrentStep('career-suggestions');
     } catch (error) {
       console.error('Error submitting survey:', error);
     }
