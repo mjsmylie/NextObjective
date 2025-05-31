@@ -436,6 +436,13 @@ function App() {
         <h2>🎯 AI Career Suggestions</h2>
         <p className="step-description">Based on your resume analysis, here are the top career paths for you:</p>
         
+        {isEnhancedSuggestions && (
+          <div className="enhanced-indicator">
+            <span className="enhanced-badge">✨ Enhanced with Survey Preferences</span>
+            <p>These recommendations have been personalized based on your survey responses!</p>
+          </div>
+        )}
+        
         <div className="suggestions-grid">
           {resumeAnalysis?.career_suggestions.map((suggestion, index) => (
             <div key={index} className="suggestion-card">
