@@ -426,7 +426,49 @@ async def upload_resume(
     
     return analysis
 
-@api_router.get("/career-paths")
+@api_router.post("/enhanced-career-suggestions")
+async def get_enhanced_career_suggestions(user_id: str = Form(...)):
+    """Get career suggestions enhanced with survey responses"""
+    # Get user's latest resume analysis
+    latest_analysis = await db.resume_analyses.find_one(
+        {"user_id": user_id},
+        sort=[("timestamp", -1)]
+    )
+    
+    if not latest_analysis:
+        raise HTTPException(status_code=404, detail="No resume analysis found for user")
+    
+    # Get user's survey responses
+    latest_survey = await db.survey_responses.find_one(
+        {"user_id": user_id},
+        sort=[("timestamp", -1)]
+    )
+    
+    if not latest_survey:
+        # No survey data, return original analysis
+        return latest_analysis
+    
+    # Extract resume text from skills and experience level (simplified)
+    resume_text = f"Skills: {', '.join(latest_analysis['extracted_skills'])}\nExperience Level: {latest_analysis['experience_level']}"
+    
+    # Get enhanced suggestions using survey data
+    enhanced_analysis = await analyze_resume_with_survey(resume_text, latest_survey['responses'])
+    
+    # Create enhanced analysis response
+    analysis = ResumeAnalysisResponse(
+        user_id=user_id,
+        career_suggestions=[CareerSuggestion(**suggestion) for suggestion in enhanced_analysis["career_suggestions"]],
+        extracted_skills=enhanced_analysis["extracted_skills"],
+        experience_level=enhanced_analysis["experience_level"]
+    )
+    
+    # Update original analysis with enhanced suggestions
+    await db.resume_analyses.update_one(
+        {"id": latest_analysis["id"]},
+        {"$set": {"career_suggestions": [s.dict() for s in analysis.career_suggestions]}}
+    )
+    
+    return analysis
 async def get_career_paths():
     return {"career_paths": CAREER_PATHS}
 
