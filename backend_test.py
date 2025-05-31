@@ -102,22 +102,41 @@ class NextObjectiveAPITester:
 
     def test_upload_resume(self):
         """Test resume upload and analysis"""
-        # Create a simple test resume
+        # Create a more detailed test resume for software engineer
         resume_content = """
         John Doe
-        Software Engineer
-        5 years experience in Python, JavaScript, React
-        Led development teams, built web applications
-        Bachelor's in Computer Science
-        Skills: Programming, Leadership, Problem Solving
+        Software Engineer with 5+ years of experience
+        
+        SKILLS
+        - Programming: Python, JavaScript, React, Node.js, Java
+        - Cloud: AWS, Azure, Docker, Kubernetes
+        - Tools: Git, CI/CD, Jira, Agile methodologies
+        - Soft Skills: Team leadership, communication, problem-solving
+        
+        EXPERIENCE
+        Senior Software Engineer, Tech Solutions Inc.
+        2020-Present
+        - Led development of cloud-based applications using microservices architecture
+        - Managed team of 5 developers for product delivery
+        - Implemented CI/CD pipelines reducing deployment time by 40%
+        
+        Software Developer, Innovative Systems
+        2018-2020
+        - Developed web applications using React and Node.js
+        - Collaborated with UX designers to implement responsive interfaces
+        - Optimized database queries improving application performance
+        
+        EDUCATION
+        Bachelor of Science in Computer Science
+        University of Technology, 2018
         """
         
-        # Save resume to a temporary file
-        with open('/tmp/test_resume.txt', 'w') as f:
+        # Save resume to a file
+        with open('/app/test_resume.txt', 'w') as f:
             f.write(resume_content)
         
         # Upload the resume
-        with open('/tmp/test_resume.txt', 'rb') as f:
+        with open('/app/test_resume.txt', 'rb') as f:
             files = {'file': ('test_resume.txt', f, 'text/plain')}
             form_data = {'user_id': self.user_id}
             
@@ -132,6 +151,7 @@ class NextObjectiveAPITester:
             
             if success and 'id' in response:
                 self.resume_analysis_id = response['id']
+                self.resume_analysis = response  # Store the analysis for later comparison
                 print(f"Resume analyzed with ID: {self.resume_analysis_id}")
                 
                 # Check if career suggestions were returned
