@@ -626,7 +626,7 @@ function App() {
       </main>
       
       <footer className="footer">
-        <p>&copy; 2025 CareerLaunch. Transform your career with AI.</p>
+        <p>&copy; 2025 NextObjective. Transform your career with AI.</p>
       </footer>
     </div>
   );
