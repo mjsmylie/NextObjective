@@ -26,6 +26,7 @@ function App() {
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [warningCareerPath, setWarningCareerPath] = useState('');
   const [potentialScore, setPotentialScore] = useState(0);
+  const [isEnhancedSuggestions, setIsEnhancedSuggestions] = useState(false);
 
   useEffect(() => {
     // Create a user session and store user ID
