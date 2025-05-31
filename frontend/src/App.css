@@ -312,6 +312,28 @@ body {
   line-height: 1.6;
 }
 
+.preference-match {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.preference-match h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #059669;
+}
+
+.preference-match p {
+  color: #047857;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .skills-list h4 {
   font-size: 0.9rem;
   font-weight: 600;
