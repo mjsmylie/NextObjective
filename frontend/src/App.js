@@ -624,7 +624,19 @@ function App() {
   const renderSurvey = () => (
     <div className="step-container">
       <h2>📝 Career Preferences Survey</h2>
-      <p className="step-description">Help us refine your career recommendations</p>
+      <p className="step-description">Help us refine your career recommendations with personalized preferences</p>
+      
+      <div className="survey-progress">
+        <div className="progress-text">
+          Progress: {Object.keys(surveyResponses).length} / {surveyQuestions.length} questions completed
+        </div>
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{width: `${(Object.keys(surveyResponses).length / surveyQuestions.length) * 100}%`}}
+          ></div>
+        </div>
+      </div>
       
       <div className="survey-questions">
         {surveyQuestions.map((question) => (
@@ -652,7 +664,7 @@ function App() {
                   type="range"
                   min={question.min}
                   max={question.max}
-                  value={surveyResponses[question.id] || question.min}
+                  value={surveyResponses[question.id] || Math.ceil((question.min + question.max) / 2)}
                   onChange={(e) => setSurveyResponses({
                     ...surveyResponses,
                     [question.id]: parseInt(e.target.value)
@@ -660,6 +672,9 @@ function App() {
                   className="scale-slider"
                 />
                 <span>{question.labels[1]}</span>
+                <div className="scale-value">
+                  Current: {surveyResponses[question.id] || Math.ceil((question.min + question.max) / 2)}
+                </div>
               </div>
             )}
           </div>
