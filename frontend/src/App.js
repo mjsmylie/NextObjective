@@ -208,10 +208,21 @@ function App() {
   };
 
   const handleSurveySubmit = async () => {
+    console.log('Survey submit started with responses:', surveyResponses);
+    console.log('Number of responses:', Object.keys(surveyResponses).length);
+    console.log('Required responses:', surveyQuestions.length);
+    
+    if (Object.keys(surveyResponses).length < surveyQuestions.length) {
+      alert(`Please answer all ${surveyQuestions.length} questions before submitting.`);
+      return;
+    }
+    
     setLoading(true);
     try {
+      console.log('Submitting survey...');
+      
       // Submit survey responses
-      await fetch(`${API_BASE_URL}/api/submit-survey`, {
+      const surveyResponse = await fetch(`${API_BASE_URL}/api/submit-survey`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,15 +231,26 @@ function App() {
         })
       });
       
+      if (!surveyResponse.ok) {
+        throw new Error(`Survey submission failed: ${surveyResponse.status}`);
+      }
+      
       console.log('Survey submitted successfully, getting enhanced suggestions...');
       
       // Get enhanced career suggestions based on survey responses
-      await getEnhancedCareerSuggestions();
+      const enhancedSuccess = await getEnhancedCareerSuggestions();
       
-      console.log('Enhanced suggestions received, navigating to career suggestions...');
-      setCurrentStep('career-suggestions');
+      if (enhancedSuccess) {
+        console.log('Enhanced suggestions received, navigating to career suggestions...');
+        setCurrentStep('career-suggestions');
+      } else {
+        console.log('Enhanced suggestions failed, falling back to regular suggestions...');
+        setCurrentStep('career-suggestions');
+      }
+      
     } catch (error) {
-      console.error('Error submitting survey:', error);
+      console.error('Error in survey submission flow:', error);
+      alert('There was an issue processing your survey. Showing standard recommendations.');
       // Fallback to regular career suggestions if enhanced fails
       setCurrentStep('career-suggestions');
     } finally {
