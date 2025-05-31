@@ -414,34 +414,209 @@ async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[st
             
     except Exception as e:
         print(f"Enhanced AI analysis error: {e}")
-        # Return enhanced fallback with preference consideration
-        return {
-            "career_suggestions": [
-                {
-                    "career_path": "Remote Software Developer",
-                    "match_score": 0.82,
-                    "reasoning": "Good fit based on technical skills and remote work preferences",
-                    "key_skills": ["Programming", "Remote Collaboration", "Problem Solving"],
-                    "preference_match": "Aligns with remote work and technology preferences"
-                },
-                {
-                    "career_path": "Product Manager",
-                    "match_score": 0.78,
-                    "reasoning": "Leadership skills match with preference-aligned work environment",
-                    "key_skills": ["Leadership", "Communication", "Strategy"],
-                    "preference_match": "Good match for stated work style and company size preferences"
-                },
-                {
-                    "career_path": "UX Designer",
-                    "match_score": 0.74,
-                    "reasoning": "Creative skills with technology focus matching preferences",
-                    "key_skills": ["Design", "Creativity", "User Research"],
-                    "preference_match": "Matches creative expression and technology industry preferences"
-                }
-            ],
-            "extracted_skills": ["Communication", "Leadership", "Technical Skills"],
-            "experience_level": "Mid Level"
+        # Return enhanced fallback with actual preference consideration
+        return generate_survey_enhanced_fallback(resume_text, survey_responses)
+
+def generate_survey_enhanced_fallback(resume_text: str, survey_responses: Dict[str, Any]) -> Dict[str, Any]:
+    """Generate career suggestions that combine resume analysis (70-80%) with survey preferences (20-30%)"""
+    
+    # Start with intelligent resume analysis (primary factor)
+    base_analysis = generate_intelligent_fallback(resume_text)
+    
+    # Apply survey preference adjustments (secondary factor)
+    enhanced_suggestions = []
+    
+    for suggestion in base_analysis["career_suggestions"]:
+        # Calculate preference alignment score (0.0 to 1.0)
+        preference_score = calculate_preference_alignment(suggestion["career_path"], survey_responses)
+        
+        # Apply 20-30% weight to preferences (0.2-0.3 multiplier)
+        base_score = suggestion["match_score"]
+        preference_adjustment = (preference_score - 0.5) * 0.25  # Max ±12.5% adjustment
+        
+        # Calculate final score (70-80% resume, 20-30% preferences)
+        final_score = min(1.0, max(0.0, base_score + preference_adjustment))
+        
+        # Generate preference-aware reasoning and explanation
+        preference_explanation = generate_preference_explanation(suggestion["career_path"], survey_responses, preference_score)
+        
+        enhanced_suggestion = {
+            "career_path": suggestion["career_path"],
+            "match_score": final_score,
+            "reasoning": suggestion["reasoning"] + f" Additionally, {preference_explanation['reasoning_addition']}",
+            "key_skills": suggestion["key_skills"],
+            "preference_match": preference_explanation["preference_match"]
         }
+        
+        enhanced_suggestions.append(enhanced_suggestion)
+    
+    # Re-sort by final scores and ensure top 3
+    enhanced_suggestions.sort(key=lambda x: x["match_score"], reverse=True)
+    
+    # Consider swapping in preference-aligned careers if they're much better matches
+    alternative_careers = get_preference_aligned_careers(survey_responses)
+    for alt_career in alternative_careers:
+        alt_score = calculate_preference_alignment(alt_career, survey_responses)
+        if alt_score > 0.8:  # High preference alignment
+            # Only replace if not already in top suggestions
+            existing_careers = [s["career_path"] for s in enhanced_suggestions]
+            if alt_career not in existing_careers:
+                # Replace lowest scoring suggestion if preference alignment is significantly better
+                if len(enhanced_suggestions) >= 3 and alt_score > enhanced_suggestions[2]["match_score"] + 0.1:
+                    enhanced_suggestions[2] = {
+                        "career_path": alt_career,
+                        "match_score": 0.65 + (alt_score * 0.2),  # Base + preference boost
+                        "reasoning": f"Good foundational skills with strong alignment to your preferences",
+                        "key_skills": get_career_skills(alt_career),
+                        "preference_match": generate_preference_explanation(alt_career, survey_responses, alt_score)["preference_match"]
+                    }
+    
+    return {
+        "career_suggestions": enhanced_suggestions[:3],
+        "extracted_skills": base_analysis["extracted_skills"],
+        "experience_level": base_analysis["experience_level"]
+    }
+
+def calculate_preference_alignment(career_path: str, survey_responses: Dict[str, Any]) -> float:
+    """Calculate how well a career aligns with survey preferences (0.0 to 1.0)"""
+    alignment_score = 0.5  # Neutral starting point
+    total_factors = 0
+    
+    career_lower = career_path.lower()
+    
+    # Work Environment Preference (Question 1)
+    if "1" in survey_responses:
+        work_env = survey_responses["1"]
+        if work_env == "Remote" and any(word in career_lower for word in ["remote", "developer", "writer", "analyst"]):
+            alignment_score += 0.15
+        elif work_env == "Office" and any(word in career_lower for word in ["manager", "sales", "coordinator"]):
+            alignment_score += 0.1
+        elif work_env == "Hybrid" and any(word in career_lower for word in ["consultant", "project", "business"]):
+            alignment_score += 0.1
+        total_factors += 1
+    
+    # Company Size Preference (Question 3)
+    if "3" in survey_responses:
+        company_size = survey_responses["3"]
+        if "Startup" in company_size and any(word in career_lower for word in ["developer", "designer", "product"]):
+            alignment_score += 0.1
+        elif "Large" in company_size and any(word in career_lower for word in ["analyst", "specialist", "coordinator"]):
+            alignment_score += 0.1
+        total_factors += 1
+    
+    # Career Motivation (Question 6)
+    if "6" in survey_responses:
+        motivation = survey_responses["6"]
+        if motivation == "Creative expression" and any(word in career_lower for word in ["designer", "creative", "content", "marketing"]):
+            alignment_score += 0.15
+        elif motivation == "Financial growth" and any(word in career_lower for word in ["sales", "business", "manager", "analyst"]):
+            alignment_score += 0.1
+        elif motivation == "Personal growth" and any(word in career_lower for word in ["consultant", "analyst", "developer"]):
+            alignment_score += 0.1
+        total_factors += 1
+    
+    # Industry Interest (Question 8)
+    if "8" in survey_responses:
+        industry = survey_responses["8"]
+        if industry == "Technology" and any(word in career_lower for word in ["developer", "engineer", "analyst", "data"]):
+            alignment_score += 0.15
+        elif industry == "Healthcare" and any(word in career_lower for word in ["analyst", "coordinator", "researcher"]):
+            alignment_score += 0.1
+        elif industry == "Marketing" and any(word in career_lower for word in ["marketing", "content", "social", "creative"]):
+            alignment_score += 0.15
+        total_factors += 1
+    
+    # Work Style Preference (Question 5)
+    if "5" in survey_responses:
+        work_style = survey_responses["5"]
+        if work_style == "Independently" and any(word in career_lower for word in ["developer", "analyst", "writer", "researcher"]):
+            alignment_score += 0.1
+        elif work_style == "In teams" and any(word in career_lower for word in ["manager", "coordinator", "consultant"]):
+            alignment_score += 0.1
+        total_factors += 1
+    
+    # Ensure score stays within bounds
+    return min(1.0, max(0.0, alignment_score))
+
+def generate_preference_explanation(career_path: str, survey_responses: Dict[str, Any], preference_score: float) -> Dict[str, str]:
+    """Generate explanations for how the career aligns with preferences"""
+    
+    explanations = []
+    career_lower = career_path.lower()
+    
+    # Check specific preference alignments
+    if "1" in survey_responses and survey_responses["1"] == "Remote":
+        if any(word in career_lower for word in ["remote", "developer", "analyst"]):
+            explanations.append("supports remote work flexibility")
+    
+    if "3" in survey_responses:
+        company_size = survey_responses["3"]
+        if "Small" in company_size:
+            explanations.append("fits well in small, agile company environments")
+        elif "Large" in company_size:
+            explanations.append("suitable for large corporate structures")
+    
+    if "6" in survey_responses:
+        motivation = survey_responses["6"]
+        if motivation == "Creative expression" and any(word in career_lower for word in ["designer", "creative", "marketing"]):
+            explanations.append("offers creative fulfillment and self-expression")
+        elif motivation == "Financial growth":
+            explanations.append("provides strong earning potential and career advancement")
+    
+    if "8" in survey_responses:
+        industry = survey_responses["8"]
+        if industry == "Technology" and any(word in career_lower for word in ["developer", "engineer", "data"]):
+            explanations.append("aligns with your technology industry interest")
+    
+    # Generate final explanation
+    if preference_score > 0.7:
+        preference_match = f"Excellent fit: {', '.join(explanations[:3])}" if explanations else "Strong alignment with your stated preferences"
+    elif preference_score > 0.5:
+        preference_match = f"Good fit: {', '.join(explanations[:2])}" if explanations else "Reasonable alignment with your preferences"
+    else:
+        preference_match = "Moderate fit based on skills, though some preferences may not align perfectly"
+    
+    reasoning_addition = "this role aligns well with your survey preferences" if preference_score > 0.6 else "your skills are transferable to this role"
+    
+    return {
+        "preference_match": preference_match,
+        "reasoning_addition": reasoning_addition
+    }
+
+def get_preference_aligned_careers(survey_responses: Dict[str, Any]) -> List[str]:
+    """Get career suggestions specifically aligned with survey preferences"""
+    aligned_careers = []
+    
+    # Remote work preference
+    if "1" in survey_responses and survey_responses["1"] == "Remote":
+        aligned_careers.extend(["Remote Software Developer", "Digital Marketing Specialist", "Content Writer"])
+    
+    # Creative motivation
+    if "6" in survey_responses and survey_responses["6"] == "Creative expression":
+        aligned_careers.extend(["UX Designer", "Graphic Designer", "Content Creator", "Marketing Creative"])
+    
+    # Technology industry
+    if "8" in survey_responses and survey_responses["8"] == "Technology":
+        aligned_careers.extend(["Software Engineer", "Product Manager", "Data Analyst"])
+    
+    # Small company preference
+    if "3" in survey_responses and "Small" in survey_responses["3"]:
+        aligned_careers.extend(["Startup Product Manager", "Growth Marketing Manager"])
+    
+    return list(set(aligned_careers))  # Remove duplicates
+
+def get_career_skills(career_path: str) -> List[str]:
+    """Get relevant skills for a career path"""
+    career_skills = {
+        "Remote Software Developer": ["Programming", "Remote Collaboration", "Self-Management"],
+        "Digital Marketing Specialist": ["Digital Marketing", "Analytics", "Content Creation"],
+        "UX Designer": ["Design", "User Research", "Prototyping"],
+        "Content Creator": ["Writing", "Creativity", "Content Strategy"],
+        "Product Manager": ["Strategy", "Communication", "Product Development"],
+        "Data Analyst": ["Data Analysis", "Statistics", "Problem Solving"]
+    }
+    
+    return career_skills.get(career_path, ["Communication", "Problem Solving", "Adaptability"])
 
 def format_survey_preferences(survey_responses: Dict[str, Any]) -> str:
     """Convert survey responses to readable preference text"""
