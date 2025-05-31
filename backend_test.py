@@ -295,10 +295,15 @@ class NextObjectiveAPITester:
         # Create mock survey responses
         survey_responses = {
             "1": "Remote",
-            "2": 4,
-            "3": "Medium (201-1000)",
-            "4": 3,
-            "5": "Mix of both"
+            "2": 4,  # High work-life balance importance
+            "3": "Small (51-200)",
+            "4": 3,  # Neutral public speaking comfort
+            "5": "Mix of both",
+            "6": "Creative expression",
+            "7": 3,  # Moderate job security importance
+            "8": "Technology",
+            "9": 2,  # Slightly willing to relocate
+            "10": "1 year"
         }
         
         success, response = self.run_test(
@@ -311,7 +316,89 @@ class NextObjectiveAPITester:
                 "responses": survey_responses
             }
         )
+        
+        if success:
+            print(f"Successfully submitted survey with {len(survey_responses)} responses")
+            # Store the survey responses for later comparison
+            self.survey_responses = survey_responses
+        
         return success
+        
+    def test_get_enhanced_career_suggestions(self):
+        """Test getting enhanced career suggestions based on survey responses"""
+        # First, store the standard analysis for comparison
+        self.standard_analysis = self.resume_analysis
+        
+        # Now get enhanced suggestions
+        form_data = {'user_id': self.user_id}
+        
+        success, response = self.run_test(
+            "Get Enhanced Career Suggestions",
+            "POST",
+            "enhanced-career-suggestions",
+            200,
+            form_data=form_data
+        )
+        
+        if success:
+            self.enhanced_analysis = response
+            
+            # Check if preference_match field exists in career suggestions
+            has_preference_match = all('preference_match' in suggestion for suggestion in response.get('career_suggestions', []))
+            
+            if has_preference_match:
+                print("✅ Enhanced suggestions include preference matching information")
+                
+                # Compare standard and enhanced suggestions
+                if self.standard_analysis:
+                    self.compare_suggestions(self.standard_analysis, self.enhanced_analysis)
+                
+                return True
+            else:
+                print("❌ Enhanced suggestions missing preference matching information")
+                return False
+        
+        return False
+        
+    def compare_suggestions(self, standard, enhanced):
+        """Compare standard and enhanced career suggestions"""
+        if not standard or not enhanced:
+            print("⚠️ Cannot compare suggestions: missing data")
+            return
+            
+        std_suggestions = standard.get('career_suggestions', [])
+        enh_suggestions = enhanced.get('career_suggestions', [])
+        
+        print(f"\n📊 Comparing standard ({len(std_suggestions)} suggestions) vs enhanced ({len(enh_suggestions)} suggestions):")
+        
+        # Check if the order of suggestions has changed
+        std_paths = [s['career_path'] for s in std_suggestions]
+        enh_paths = [s['career_path'] for s in enh_suggestions]
+        
+        order_changed = std_paths != enh_paths
+        if order_changed:
+            print("✅ Career suggestion order has changed based on preferences")
+        else:
+            print("⚠️ Career suggestion order remained the same despite preferences")
+        
+        # Check if scores have been adjusted
+        score_changes = []
+        for std in std_suggestions:
+            for enh in enh_suggestions:
+                if std['career_path'] == enh['career_path']:
+                    score_diff = (enh['match_score'] - std['match_score']) * 100
+                    score_changes.append((std['career_path'], score_diff))
+        
+        if score_changes:
+            print("\nScore adjustments based on preferences:")
+            for path, diff in score_changes:
+                direction = "increased" if diff > 0 else "decreased"
+                print(f"  - {path}: {abs(diff):.1f}% {direction}")
+                
+        # Check for preference match explanations
+        print("\nPreference match explanations:")
+        for suggestion in enh_suggestions[:3]:  # Show top 3 for brevity
+            print(f"  - {suggestion['career_path']}: {suggestion.get('preference_match', 'No preference info')}")
         
     def test_get_job_listings(self):
         """Test getting job listings"""
