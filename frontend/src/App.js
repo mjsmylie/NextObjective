@@ -685,7 +685,7 @@ function App() {
                 />
                 <span>{question.labels[1]}</span>
                 <div className="scale-value">
-                  Current: {surveyResponses[question.id] || Math.ceil((question.min + question.max) / 2)}
+                  Current: {surveyResponses[question.id.toString()] || Math.ceil((question.min + question.max) / 2)}
                 </div>
               </div>
             )}
