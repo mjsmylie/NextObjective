@@ -647,10 +647,17 @@ function App() {
       <button 
         onClick={handleSurveySubmit}
         className="btn-primary"
-        disabled={Object.keys(surveyResponses).length < surveyQuestions.length}
+        disabled={Object.keys(surveyResponses).length < surveyQuestions.length || loading}
       >
-        Complete Survey
+        {loading ? 'Creating Enhanced Recommendations...' : 'Complete Survey'}
       </button>
+      
+      {loading && (
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Analyzing your preferences and creating personalized career recommendations...</p>
+        </div>
+      )}
     </div>
   );
 
