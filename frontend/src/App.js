@@ -794,6 +794,8 @@ function App() {
         {renderCurrentStep()}
       </main>
       
+      {renderWarningDialog()}
+      
       <footer className="footer">
         <p>&copy; 2025 NextObjective. Transform your career with AI.</p>
       </footer>
