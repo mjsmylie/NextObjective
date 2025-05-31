@@ -197,7 +197,7 @@ function App() {
   const renderWelcome = () => (
     <div className="step-container">
       <div className="hero-section">
-        <h1 className="hero-title">🚀 CareerLaunch</h1>
+        <h1 className="hero-title">🎯 NextObjective</h1>
         <p className="hero-subtitle">Transform your career with AI-powered guidance</p>
       </div>
       
