@@ -663,7 +663,7 @@ function App() {
                       ...surveyResponses,
                       [question.id.toString()]: option
                     })}
-                    className={`option-btn ${surveyResponses[question.id] === option ? 'selected' : ''}`}
+                    className={`option-btn ${surveyResponses[question.id.toString()] === option ? 'selected' : ''}`}
                   >
                     {option}
                   </button>
