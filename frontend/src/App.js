@@ -20,6 +20,12 @@ function App() {
   const [newLog, setNewLog] = useState('');
   const [activities, setActivities] = useState('');
   const [skills, setSkills] = useState('');
+  
+  // New state for enhanced features
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [warningCareerPath, setWarningCareerPath] = useState('');
+  const [potentialScore, setPotentialScore] = useState(0);
 
   useEffect(() => {
     // Create a user session
