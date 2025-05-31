@@ -398,9 +398,11 @@ async def get_user_progress(user_id: str):
         "recent_logs": progress_logs
     }
 
-@api_router.get("/mock-jobs/{career_path}")
+@api_router.get("/mock-jobs/{career_path:path}")
 async def get_mock_jobs(career_path: str):
     """Mock job listings - in real implementation would use LinkedIn API"""
+    # Handle URL-encoded career paths
+    career_path = career_path.replace("%20", " ")
     mock_jobs = [
         JobListing(
             title=f"Senior {career_path}",
