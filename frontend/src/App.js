@@ -94,6 +94,44 @@ function App() {
   };
 
   const selectCareerPath = async (careerPath) => {
+    // Check if this career path has a low match score
+    const isLowScore = await checkCareerPathScore(careerPath);
+    
+    if (isLowScore) {
+      setWarningCareerPath(careerPath);
+      setShowWarningDialog(true);
+      return;
+    }
+    
+    proceedWithCareerPath(careerPath);
+  };
+
+  const checkCareerPathScore = async (careerPath) => {
+    // Calculate potential score for this career path
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('career_path', careerPath);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/calculate-career-score`, {
+        method: 'POST',
+        body: formData
+      });
+      const score = await response.json();
+      setPotentialScore(score.current_score);
+      
+      // Return true if score is below 60 (low match)
+      return score.current_score < 60;
+    } catch (error) {
+      console.error('Error checking career path score:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const proceedWithCareerPath = async (careerPath) => {
     setSelectedCareerPath(careerPath);
     
     try {
