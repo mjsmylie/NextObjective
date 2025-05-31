@@ -1,0 +1,30 @@
+
+John Doe
+Software Engineer
+
+SUMMARY
+Experienced software engineer with 5 years of experience in Python, JavaScript, and React. Led development teams and built web applications. Strong problem-solving skills and technical leadership.
+
+EXPERIENCE
+Senior Software Engineer, Tech Company
+2020 - Present
+- Led a team of 5 developers to build a customer-facing web application
+- Implemented RESTful APIs using Python and FastAPI
+- Developed frontend components with React and Redux
+
+Software Developer, Startup Inc.
+2018 - 2020
+- Built responsive web applications using JavaScript and React
+- Collaborated with UX designers to implement user-friendly interfaces
+- Participated in code reviews and mentored junior developers
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology, 2018
+
+SKILLS
+Programming: Python, JavaScript, TypeScript, HTML, CSS
+Frameworks: React, FastAPI, Express.js
+Tools: Git, Docker, AWS
+Soft Skills: Leadership, Problem Solving, Communication
+      
