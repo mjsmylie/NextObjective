@@ -442,10 +442,6 @@ function App() {
   );
 
   const renderProgress = () => {
-    const [newLog, setNewLog] = useState('');
-    const [activities, setActivities] = useState('');
-    const [skills, setSkills] = useState('');
-    
     const handleAddLog = () => {
       if (newLog.trim()) {
         addProgressLog(
