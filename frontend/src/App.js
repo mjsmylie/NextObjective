@@ -276,6 +276,7 @@ function App() {
         const enhancedAnalysis = await response.json();
         console.log('Enhanced analysis received:', enhancedAnalysis);
         setResumeAnalysis(enhancedAnalysis);
+        setIsEnhancedSuggestions(true); // Mark as enhanced suggestions
         return true;
       } else {
         console.error('Enhanced suggestions API call failed:', response.status);
