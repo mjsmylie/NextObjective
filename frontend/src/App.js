@@ -676,10 +676,10 @@ function App() {
                   type="range"
                   min={question.min}
                   max={question.max}
-                  value={surveyResponses[question.id] || Math.ceil((question.min + question.max) / 2)}
+                  value={surveyResponses[question.id.toString()] || Math.ceil((question.min + question.max) / 2)}
                   onChange={(e) => setSurveyResponses({
                     ...surveyResponses,
-                    [question.id]: parseInt(e.target.value)
+                    [question.id.toString()]: parseInt(e.target.value)
                   })}
                   className="scale-slider"
                 />
