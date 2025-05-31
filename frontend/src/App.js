@@ -84,7 +84,7 @@ function App() {
       });
       const analysis = await response.json();
       setResumeAnalysis(analysis);
-      setCurrentStep('career-suggestions');
+      setCurrentStep('post-upload-choice');
     } catch (error) {
       console.error('Error uploading resume:', error);
       alert('Error analyzing resume. Please try again.');
