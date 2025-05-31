@@ -15,6 +15,11 @@ function App() {
   const [surveyResponses, setSurveyResponses] = useState({});
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Progress tracking state
+  const [newLog, setNewLog] = useState('');
+  const [activities, setActivities] = useState('');
+  const [skills, setSkills] = useState('');
 
   useEffect(() => {
     // Create a user session
