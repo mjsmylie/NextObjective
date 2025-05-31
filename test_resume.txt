@@ -1,0 +1,27 @@
+
+        John Doe
+        Software Engineer with 5+ years of experience
+        
+        SKILLS
+        - Programming: Python, JavaScript, React, Node.js, Java
+        - Cloud: AWS, Azure, Docker, Kubernetes
+        - Tools: Git, CI/CD, Jira, Agile methodologies
+        - Soft Skills: Team leadership, communication, problem-solving
+        
+        EXPERIENCE
+        Senior Software Engineer, Tech Solutions Inc.
+        2020-Present
+        - Led development of cloud-based applications using microservices architecture
+        - Managed team of 5 developers for product delivery
+        - Implemented CI/CD pipelines reducing deployment time by 40%
+        
+        Software Developer, Innovative Systems
+        2018-2020
+        - Developed web applications using React and Node.js
+        - Collaborated with UX designers to implement responsive interfaces
+        - Optimized database queries improving application performance
+        
+        EDUCATION
+        Bachelor of Science in Computer Science
+        University of Technology, 2018
+        
