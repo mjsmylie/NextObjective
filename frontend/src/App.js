@@ -603,7 +603,7 @@ function App() {
   return (
     <div className="App">
       <nav className="navbar">
-        <div className="nav-brand">🚀 CareerLaunch</div>
+        <div className="nav-brand">🎯 NextObjective</div>
         <div className="nav-menu">
           <button 
             onClick={() => setCurrentStep('progress')}
