@@ -14,6 +14,8 @@ class NextObjectiveAPITester:
         self.resume_analysis_id = None
         self.selected_career_path = None
         self.custom_career_path = "Space Engineer"  # For testing custom career path selection
+        self.standard_analysis = None  # Store standard analysis for comparison
+        self.enhanced_analysis = None  # Store enhanced analysis for comparison
 
     def run_test(self, name, method, endpoint, expected_status, data=None, files=None, form_data=None):
         """Run a single API test"""
