@@ -5,7 +5,7 @@ import json
 import time
 from datetime import datetime
 
-class CareerLaunchAPITester:
+class NextObjectiveAPITester:
     def __init__(self, base_url="https://c1629179-3070-4d44-b174-905da5ce2b9f.preview.emergentagent.com"):
         self.base_url = base_url
         self.user_id = None
@@ -62,7 +62,12 @@ class CareerLaunchAPITester:
             "",
             200
         )
-        return success
+        if success:
+            # Check if the API message has been updated to NextObjective
+            if 'message' in response and 'Career Transition API is running' in response['message']:
+                print("⚠️ API health message still references 'Career Transition API' instead of 'NextObjective API'")
+            return True
+        return False
 
     def test_create_user(self):
         """Test user creation"""
@@ -216,10 +221,61 @@ class CareerLaunchAPITester:
             
             return True
         return False
+        
+    def test_get_survey_questions(self):
+        """Test getting survey questions"""
+        success, response = self.run_test(
+            "Get Survey Questions",
+            "GET",
+            "survey-questions",
+            200
+        )
+        
+        if success and 'questions' in response:
+            print(f"Retrieved {len(response['questions'])} survey questions")
+            return True
+        return False
+        
+    def test_submit_survey(self):
+        """Test submitting survey responses"""
+        # Create mock survey responses
+        survey_responses = {
+            "1": "Remote",
+            "2": 4,
+            "3": "Medium (201-1000)",
+            "4": 3,
+            "5": "Mix of both"
+        }
+        
+        success, response = self.run_test(
+            "Submit Survey",
+            "POST",
+            "submit-survey",
+            200,
+            data={
+                "user_id": self.user_id,
+                "responses": survey_responses
+            }
+        )
+        return success
+        
+    def test_get_job_listings(self):
+        """Test getting job listings"""
+        success, response = self.run_test(
+            "Get Job Listings",
+            "GET",
+            f"mock-jobs/{self.selected_career_path}",
+            200
+        )
+        
+        if success and 'jobs' in response:
+            print(f"Retrieved {len(response['jobs'])} job listings")
+            return True
+        return False
 
 def main():
     # Setup
-    tester = CareerLaunchAPITester()
+    tester = NextObjectiveAPITester()
     
     # Run tests
     print("\n===== TESTING NEXTOBJECTIVE API =====\n")
@@ -258,10 +314,21 @@ def main():
     if not tester.test_get_user_progress():
         print("❌ Getting user progress failed")
     
+    # Test getting survey questions
+    if not tester.test_get_survey_questions():
+        print("❌ Getting survey questions failed")
+    
+    # Test submitting survey
+    if not tester.test_submit_survey():
+        print("❌ Submitting survey failed")
+    
+    # Test getting job listings
+    if not tester.test_get_job_listings():
+        print("❌ Getting job listings failed")
+    
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
     return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
-      
