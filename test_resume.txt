@@ -1,30 +1,27 @@
 
-John Doe
-Software Engineer
-
-SUMMARY
-Experienced software engineer with 5 years of experience in Python, JavaScript, and React. Led development teams and built web applications. Strong problem-solving skills and technical leadership.
-
-EXPERIENCE
-Senior Software Engineer, Tech Company
-2020 - Present
-- Led a team of 5 developers to build a customer-facing web application
-- Implemented RESTful APIs using Python and FastAPI
-- Developed frontend components with React and Redux
-
-Software Developer, Startup Inc.
-2018 - 2020
-- Built responsive web applications using JavaScript and React
-- Collaborated with UX designers to implement user-friendly interfaces
-- Participated in code reviews and mentored junior developers
-
-EDUCATION
-Bachelor of Science in Computer Science
-University of Technology, 2018
-
-SKILLS
-Programming: Python, JavaScript, TypeScript, HTML, CSS
-Frameworks: React, FastAPI, Express.js
-Tools: Git, Docker, AWS
-Soft Skills: Leadership, Problem Solving, Communication
-      
+        John Doe
+        Software Engineer with 5+ years of experience
+        
+        SKILLS
+        - Programming: Python, JavaScript, React, Node.js, Java
+        - Cloud: AWS, Azure, Docker, Kubernetes
+        - Tools: Git, CI/CD, Jira, Agile methodologies
+        - Soft Skills: Team leadership, communication, problem-solving
+        
+        EXPERIENCE
+        Senior Software Engineer, Tech Solutions Inc.
+        2020-Present
+        - Led development of cloud-based applications using microservices architecture
+        - Managed team of 5 developers for product delivery
+        - Implemented CI/CD pipelines reducing deployment time by 40%
+        
+        Software Developer, Innovative Systems
+        2018-2020
+        - Developed web applications using React and Node.js
+        - Collaborated with UX designers to implement responsive interfaces
+        - Optimized database queries improving application performance
+        
+        EDUCATION
+        Bachelor of Science in Computer Science
+        University of Technology, 2018
+        
