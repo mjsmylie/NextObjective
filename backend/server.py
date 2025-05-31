@@ -193,31 +193,134 @@ async def analyze_resume_with_ai(resume_text: str) -> Dict[str, Any]:
         
     except Exception as e:
         print(f"AI analysis error: {e}")
-        # Fallback response with 3 suggestions
-        return {
-            "career_suggestions": [
-                {
-                    "career_path": "Software Engineer",
-                    "match_score": 0.8,
-                    "reasoning": "Based on technical background and skills",
-                    "key_skills": ["Programming", "Problem Solving", "Technical Skills"]
-                },
-                {
-                    "career_path": "Data Analyst", 
-                    "match_score": 0.75,
-                    "reasoning": "Strong analytical and technical capabilities",
-                    "key_skills": ["Data Analysis", "Problem Solving", "Technical Skills"]
-                },
-                {
-                    "career_path": "Project Manager",
-                    "match_score": 0.7, 
-                    "reasoning": "Leadership potential and organizational skills",
-                    "key_skills": ["Leadership", "Communication", "Project Management"]
-                }
-            ],
-            "extracted_skills": ["Communication", "Leadership", "Technical Skills"],
-            "experience_level": "Mid Level"
+        # Intelligent fallback based on resume content
+        return generate_intelligent_fallback(resume_text)
+
+def generate_intelligent_fallback(resume_text: str) -> Dict[str, Any]:
+    """Generate intelligent career suggestions based on resume content analysis"""
+    resume_lower = resume_text.lower()
+    
+    # Analyze resume content for keywords
+    tech_keywords = ["software", "developer", "programming", "python", "javascript", "react", "coding", "technical", "engineer", "development"]
+    business_keywords = ["management", "business", "analyst", "strategy", "operations", "project", "marketing", "sales"]
+    creative_keywords = ["design", "creative", "marketing", "content", "writing", "visual", "graphic", "ux", "ui"]
+    data_keywords = ["data", "analytics", "analysis", "statistics", "research", "science", "machine learning", "ai"]
+    leadership_keywords = ["lead", "manager", "director", "team", "leadership", "supervisor", "coordinator"]
+    
+    # Count keyword matches
+    tech_score = sum(1 for keyword in tech_keywords if keyword in resume_lower)
+    business_score = sum(1 for keyword in business_keywords if keyword in resume_lower)
+    creative_score = sum(1 for keyword in creative_keywords if keyword in resume_lower)
+    data_score = sum(1 for keyword in data_keywords if keyword in resume_lower)
+    leadership_score = sum(1 for keyword in leadership_keywords if keyword in resume_lower)
+    
+    # Determine experience level
+    years_match = re.search(r'(\d+)\s*(?:years?|yrs?)', resume_lower)
+    if years_match:
+        years = int(years_match.group(1))
+        if years < 2:
+            experience_level = "Entry Level"
+        elif years < 5:
+            experience_level = "Mid Level"
+        else:
+            experience_level = "Senior Level"
+    else:
+        experience_level = "Mid Level"
+    
+    # Generate suggestions based on keyword analysis
+    suggestions = []
+    
+    # Tech-focused suggestions
+    if tech_score >= 3:
+        suggestions.append({
+            "career_path": "Software Engineer" if experience_level != "Entry Level" else "Junior Software Developer",
+            "match_score": 0.85 + (tech_score * 0.02),
+            "reasoning": f"Strong technical background with {tech_score} relevant technical skills mentioned",
+            "key_skills": ["Programming", "Problem Solving", "Technical Skills"]
+        })
+        
+    # Data-focused suggestions  
+    if data_score >= 2 or tech_score >= 2:
+        suggestions.append({
+            "career_path": "Data Analyst" if experience_level != "Senior Level" else "Senior Data Scientist",
+            "match_score": 0.78 + (data_score * 0.03),
+            "reasoning": f"Analytical capabilities with {data_score + tech_score} relevant technical and analytical skills",
+            "key_skills": ["Data Analysis", "Problem Solving", "Technical Skills"]
+        })
+    
+    # Business/Management suggestions
+    if business_score >= 2 or leadership_score >= 2:
+        suggestions.append({
+            "career_path": "Business Analyst" if experience_level != "Senior Level" else "Product Manager",
+            "match_score": 0.75 + (business_score * 0.02),
+            "reasoning": f"Business acumen with {business_score + leadership_score} relevant business and leadership skills",
+            "key_skills": ["Analysis", "Communication", "Business Strategy"]
+        })
+    
+    # Creative suggestions
+    if creative_score >= 2:
+        suggestions.append({
+            "career_path": "UX Designer" if tech_score > 0 else "Marketing Coordinator",
+            "match_score": 0.72 + (creative_score * 0.03),
+            "reasoning": f"Creative skills with {creative_score} relevant creative and design skills",
+            "key_skills": ["Design", "Creativity", "Communication"]
+        })
+    
+    # Leadership suggestions
+    if leadership_score >= 3 and experience_level == "Senior Level":
+        suggestions.append({
+            "career_path": "Project Manager",
+            "match_score": 0.80 + (leadership_score * 0.02),
+            "reasoning": f"Strong leadership background with {leadership_score} relevant management skills",
+            "key_skills": ["Leadership", "Project Management", "Communication"]
+        })
+    
+    # Ensure we have at least 3 suggestions
+    default_suggestions = [
+        {
+            "career_path": "Business Development Representative",
+            "match_score": 0.68,
+            "reasoning": "Versatile professional skills suitable for business development",
+            "key_skills": ["Communication", "Sales", "Relationship Building"]
+        },
+        {
+            "career_path": "Operations Coordinator", 
+            "match_score": 0.65,
+            "reasoning": "Organizational skills suitable for operations management",
+            "key_skills": ["Organization", "Process Improvement", "Communication"]
+        },
+        {
+            "career_path": "Customer Success Manager",
+            "match_score": 0.62,
+            "reasoning": "People skills and problem-solving abilities for customer success",
+            "key_skills": ["Customer Service", "Problem Solving", "Communication"]
         }
+    ]
+    
+    # Add default suggestions if needed
+    while len(suggestions) < 3:
+        suggestions.append(default_suggestions[len(suggestions)])
+    
+    # Sort by match score and take top 3
+    suggestions.sort(key=lambda x: x["match_score"], reverse=True)
+    suggestions = suggestions[:3]
+    
+    # Extract skills from resume
+    all_skills = ["Communication", "Problem Solving", "Leadership"]
+    if tech_score > 0:
+        all_skills.extend(["Technical Skills", "Programming"])
+    if business_score > 0:
+        all_skills.extend(["Business Analysis", "Strategy"])
+    if creative_score > 0:
+        all_skills.extend(["Design", "Creativity"])
+    if data_score > 0:
+        all_skills.extend(["Data Analysis", "Research"])
+    
+    return {
+        "career_suggestions": suggestions,
+        "extracted_skills": list(set(all_skills))[:6],  # Limit to 6 unique skills
+        "experience_level": experience_level
+    }
 
 # Enhanced AI function that considers survey responses
 async def analyze_resume_with_survey(resume_text: str, survey_responses: Dict[str, Any]) -> Dict[str, Any]:
